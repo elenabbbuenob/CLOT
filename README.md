@@ -7,7 +7,7 @@ Unsupervised action segmentation has recently pushed its limits with ASOT, an op
   <em>Figure 1: Overview of CLOT.</em>
 </p>
 
-**Figure:** Given precomputed frame embeddings $X$ as input, CLOT first solves an OT problem to generate pseudo-labels $T$ alongside initial frame embeddings $F$. It then estimates segment embeddings $S$ and pseudo-labels $T_S$ by solving a second OT problem. Finally, a third OT problem is formulated to obtain refined frame embeddings $F_R$ and pseudo-labels $T_R$, by leveraging cross-attention between the learned $F$ and $S$, thereby closing the loop between frame and segment representations.
+**Figure 1:** Given precomputed frame embeddings $X$ as input, CLOT first solves an OT problem to generate pseudo-labels $T$ alongside initial frame embeddings $F$. It then estimates segment embeddings $S$ and pseudo-labels $T_S$ by solving a second OT problem. Finally, a third OT problem is formulated to obtain refined frame embeddings $F_R$ and pseudo-labels $T_R$, by leveraging cross-attention between the learned $F$ and $S$, thereby closing the loop between frame and segment representations.
 
 ## Contributions
 This repository contains the core implementation of the method proposed in our article.  
@@ -16,6 +16,12 @@ All remaining components (e.g., data preprocessing, training and evaluation pipe
 - **Cross-attention refinement loop**: segmentation codes are stabilized through cross-attention between frame features and action queries before solving the transport problem.[`src/cross-att.py`](src/cross-att.py)
 - **Geometric regularization with sliced Wasserstein distance**: a sliced Wasserstein term is added to the cluster centers, dynamically shaping the cost matrix and penalizing geometric discrepancies.[`src/gsw.py`](src/gsw.py)
 - **Feature dispatching mechanism**: a differentiable prior encourages monotonic alignment between frame positions and cluster indices, avoiding degenerate solutions on long sequences.[`src/feature_dispatching.py`](src/feature_dispatching.py)
+<p align="center">
+  <img src="src/arquitecture.png" alt="Diagram of the CLOT architecture"  /><br>
+  <em>Figure 2: Diagram of the CLOT architecture.</em>
+</p>
+
+**Figure 2:** The only model input is the initial feature embeddings $X$ extracted from video frames. The model consists of a multi-layer perceptron (MLP) encoder with a feature dispatching mechanism, a parallel decoder, and a cross-attention module. The **magenta boxes** in Figure 1 indicate the **architectural components** of the model, whereas the **orange boxes** correspond to the **learnable variables**, which include the learnable action embeddings $A$ as well as the learnable frame and segment embeddings. Arrows denote the computational/gradient flow, with **crossed-out arrows** (arrows with a cross in the figure) indicating points where the gradient flow is stopped. Specifically, **cyan arrows** correspond to the **first stage**, **green arrows** to the **second stage**, and **purple arrows** to the **third stage**. The model leverages a closed-loop optimal transport mechanism to refine frame embeddings through cross-attention with segment embeddings, ensuring improved action segmentation accuracy. The estimated OT matrices $\mathbf{T}$, $\mathbf{T_{R}}$, and $\mathbf{T_{S}}$ act as pseudo-labels during training and are computed at different stages by using the frame/segment features $F$, $S$, and $F_R$ together with the action embeddings $A$, which are used to define the OT cost matrices.
 
 ## Prerequisites
 
